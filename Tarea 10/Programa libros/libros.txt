@@ -1,0 +1,3 @@
+3|2003|7.30|autor3|libro3|3
+2|2002|8.20|autor2|libro2|2
+1|2001|10.10|autor1|libro1|1

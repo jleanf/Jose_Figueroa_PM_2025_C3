@@ -25,6 +25,7 @@ void agregar_libro(Libro **cabeza);
 void eliminar_libro(Libro **cabeza);
 void buscar_libro(Libro *cabeza);
 char *dup_cadena(const char *s);
+void ordenar_libros(Libro *cabeza); /* bubble sort, pregunta por año o precio */
 
 int main(void)
 {
@@ -39,6 +40,7 @@ int main(void)
         printf("1 - Agregar libro\n");
         printf("2 - Eliminar libro\n");
         printf("3 - Buscar libro\n");
+        printf("4 - Ordenar libros\n");
         printf("0 - Salir\n");
         printf("Selecciona una opcion: ");
         if (scanf("%d", &opcion) != 1) opcion = -1;
@@ -58,6 +60,11 @@ int main(void)
         else if (opcion == 3)
         {
             buscar_libro(cabeza);
+        }
+        else if (opcion == 4)
+        {
+            ordenar_libros(cabeza);
+            guardar_libros(cabeza);
         }
         else if (opcion == 0)
         {
@@ -174,7 +181,7 @@ void liberar_lista(Libro *cabeza)
     }
 }
 
-/* imprimir resumen (titulo, autor, ano) */
+/* imprimir resumen (titulo, autor, ano, precio) */
 void imprimir_resumen(Libro *cabeza)
 {
     if (!cabeza)
@@ -185,7 +192,7 @@ void imprimir_resumen(Libro *cabeza)
     int i = 1;
     for (Libro *p = cabeza; p; p = p->siguiente, ++i)
     {
-        printf("%d) \"%s\", %s (%d)\n", i, p->titulo, p->autor, p->ano);
+        printf("%d) \"%s\", %s (%d) - %.2f\n", i, p->titulo, p->autor, p->ano, p->precio);
     }
 }
 
@@ -350,8 +357,8 @@ void buscar_libro(Libro *cabeza)
     printf("Resultados:\n");
     for (int i = 0; i < mcount; ++i)
     {
-        printf("%d) \"%s\", %s (%d)\n", i+1,
-               matches[i]->titulo, matches[i]->autor, matches[i]->ano);
+        printf("%d) \"%s\", %s (%d) - %.2f\n", i+1,
+               matches[i]->titulo, matches[i]->autor, matches[i]->ano, matches[i]->precio);
     }
     printf("Seleccione un libro (numero) para ver detalles, 0 para cancelar: ");
     int sel;
@@ -373,4 +380,79 @@ void buscar_libro(Libro *cabeza)
     printf("Descripcion: %s\n", e->descripcion);
     printf("-------------------------\n");
     free(matches);
+}
+
+/* ordenar_libros: pide criterio y realiza bubble sort intercambiando campos */
+void ordenar_libros(Libro *cabeza)
+{
+    if (!cabeza || !cabeza->siguiente)
+    {
+        printf("No hay suficientes libros para ordenar.\n");
+        return;
+    }
+
+    printf("\n--- Ordenar libros ---\n");
+    printf("1 - Por ano (ascendente)\n");
+    printf("2 - Por precio (ascendente)\n");
+    printf("Selecciona criterio: ");
+    int crit;
+    scanf("%d", &crit);
+    getchar();
+    if (crit != 1 && crit != 2)
+    {
+        printf("Criterio no valido.\n");
+        return;
+    }
+
+    int swapped;
+    do
+    {
+        swapped = 0;
+        Libro *p = cabeza;
+        while (p->siguiente)
+        {
+            int do_swap = 0;
+            if (crit == 1)
+            {
+                if (p->ano > p->siguiente->ano) do_swap = 1;
+            }
+            else /* crit == 2 */
+            {
+                if (p->precio > p->siguiente->precio) do_swap = 1;
+            }
+
+            if (do_swap)
+            {
+                /* intercambiar campos simples y punteros de cadena */
+                int tmp_ano = p->ano;
+                p->ano = p->siguiente->ano;
+                p->siguiente->ano = tmp_ano;
+
+                double tmp_precio = p->precio;
+                p->precio = p->siguiente->precio;
+                p->siguiente->precio = tmp_precio;
+
+                int tmp_codigo = p->codigo;
+                p->codigo = p->siguiente->codigo;
+                p->siguiente->codigo = tmp_codigo;
+
+                char *tmp_autor = p->autor;
+                p->autor = p->siguiente->autor;
+                p->siguiente->autor = tmp_autor;
+
+                char *tmp_titulo = p->titulo;
+                p->titulo = p->siguiente->titulo;
+                p->siguiente->titulo = tmp_titulo;
+
+                char *tmp_desc = p->descripcion;
+                p->descripcion = p->siguiente->descripcion;
+                p->siguiente->descripcion = tmp_desc;
+
+                swapped = 1;
+            }
+            p = p->siguiente;
+        }
+    } while (swapped);
+
+    printf("Libros ordenados.\n");
 }
